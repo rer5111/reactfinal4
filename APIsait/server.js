@@ -1075,11 +1075,6 @@ app.delete('/api/reviews/:id', async (req, res) => {
             return res.status(404).json({ error: 'Запись отзыва не найдена.' });
         }
 
-        if (checkResult.rows[0].email !== userEmail.trim()) {
-            await client.query('ROLLBACK');
-            return res.status(403).json({ error: 'Вы можете удалять только свои собственные отзывы.' });
-        }
-
         await client.query('DELETE FROM review_info WHERE review_id = $1', [id]);
         await client.query('DELETE FROM reviews WHERE id = $1', [id]);
 

@@ -165,7 +165,8 @@ const handleSaveEdit = async (reviewId) => {
         }}>
             <section style={{ display: "flex", gap: "30px", borderBottom: "2px solid gray", paddingBottom: "30px" }}>
                 <div>
-                    <img src={product.img} alt={product.title} style={{ maxWidth: "200px" }} />
+                    {console.log(product.img)}
+                    <img src={new URL(`./assets/${product.img.split('/').pop()}`, import.meta.url).href} alt={product.title} style={{ maxWidth: "200px" }} />
                 </div>
                 <div>
                     <h1>{product.title}</h1>
