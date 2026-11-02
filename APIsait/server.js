@@ -156,7 +156,54 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// READ ORDERS BY USER ID (Strict JOIN Implementation)
+app.get('/api/users/email/:email', async (req, res) => {
+    const { email } = req.params;
+    try {
+        console.log(`Запрос пользователя с почтой ${email}...`);
+        const result = await pool.query(`
+            SELECT u.id, u.full_name, u.email, u.pass, u.phone, u.roleID, r.title as role_title 
+            FROM users u
+            JOIN roles r ON u.roleID = r.id WHERE u.email = $1
+            ORDER BY u.id ASC
+        `, [email]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найдена' });
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Ошибка получения пользователей:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// READ (BY ID)
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`Запрос пользователя с id: ${id}`);
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найден' });
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Ошибка получения пользователя:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+app.post('/api/users/passchange/attempt', async (req, res) => {
+    try {
+        const { email, pass} = req.body;
+        console.log(`Попытка изменения пароля ${email} ${pass}...`);
+        const result = await pool.query(`
+            UPDATE users SET pass = $1 WHERE email = $2;
+        `, [pass, email]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Ошибка обновления пароля:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// READ ORDERS BY USER ID
 app.get('/api/users/:id/orders', async (req, res) => {
     try {
         const { id } = req.params;
@@ -184,21 +231,6 @@ app.get('/api/users/:id/orders', async (req, res) => {
     } catch (error) {
         console.error('Ошибка получения заказов пользователя:', error);
         res.status(500).json({ error: 'Ошибка сервера при получении истории заказов' });
-    }
-});
-
-
-// READ (BY ID)
-app.get('/api/users/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        console.log(`Запрос пользователя с id: ${id}`);
-        const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-        if (result.rows.length === 0) return res.status(404).json({ error: 'Пользователь не найден' });
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Ошибка получения пользователя:', error);
-        res.status(500).json({ error: error.message });
     }
 });
 
@@ -258,6 +290,7 @@ app.delete('/api/users/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 // CREATE
 app.post('/api/categories', async (req, res) => {
     try {

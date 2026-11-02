@@ -20,6 +20,30 @@ export async function getUserById(id) {
     return await response.json();
 }
 
+export async function getUserByEmail(email) {
+    const response = await fetch(`${API_URL}/email/${email}`);
+    if (!response.ok) {
+        if (response.status === 404) throw new Error('Пользователь не найден');
+        throw new Error('Ошибка при получении профиля пользователя');
+    }
+    return await response.json();
+}
+
+export async function tryChangePass(email, pass) {
+    console.log(email, pass)
+    const response = await fetch(`${API_URL}/passchange/attempt`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email, pass: pass })
+    });
+    if (!response.ok) {
+        if (response.status === 404) throw new Error('Пользователь не найден');
+        throw new Error('Ошибка при получении профиля пользователя');
+    }
+}
+
 export async function attemptLogin(login, password) {
     const response = await fetch(`${API_URL}/login`, {
         method: 'POST',

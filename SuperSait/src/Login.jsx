@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "./UserContext";
-import { attemptLogin, createUser } from "./api/users";
+import { attemptLogin, createUser, getUserByEmail, getUserById, tryChangePass, updateUser } from "./api/users";
 
 export default function Login() {
   /*
@@ -17,6 +17,7 @@ export default function Login() {
   const [registerMode, setRegisterMode] = useState(false);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1); 
+  const [code, setCode] = useState(0);
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -64,7 +65,12 @@ export default function Login() {
             setMessage("Введите корректный email адрес!");
             return;
           }
-          setMessage("Код восстановления сгенерирован бэкендом. Проверьте консоль вашего сервера.");
+          const response = await getUserByEmail(emailTrimmed);
+          setLoginEmail(emailTrimmed);
+          const generatedCode = Math.floor(Math.random() * (999999 - 99999) + 99999)
+          console.log(generatedCode)
+          setCode(generatedCode);
+          setMessage("Код восстановления был \"Отправлен\" вам на почту (его можно найти в консоли)");
           setRecoveryStep(2);
           return;
         }
@@ -74,9 +80,17 @@ export default function Login() {
             setMessage("Заполните проверочный код и новый пароль!");
             return;
           }
+          console.log(verificationCode.trim(), code)
+          if (parseInt(verificationCode.trim()) == code){
           setMessage("Пароль успешно изменен! Вы можете войти в аккаунт.");
+          const response = await tryChangePass(loginEmail, newPasswordAfterReset.trim())
           resetInterfaceModes("login");
           return;
+          }
+          else{
+            setMessage("Неверный код.")
+            return;
+          }
         }
       }
 
