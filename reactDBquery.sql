@@ -59,7 +59,8 @@ CREATE TABLE reviews(
 id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1),
 owner_id INT REFERENCES users(id) NOT NULL,
 creation_date date,
-review VARCHAR(300)
+review VARCHAR(300),
+rating INT CHECK (rating >= 1 AND rating <= 5)
 );
 
 CREATE TABlE review_info(
@@ -132,4 +133,3 @@ INSERT INTO users (full_name, email, pass, phone, roleID) VALUES
  '+7 (900) 555-35-35', 
  (SELECT id FROM roles WHERE title = 'Пользователь')
 );
-
